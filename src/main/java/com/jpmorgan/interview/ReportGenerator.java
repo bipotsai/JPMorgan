@@ -15,21 +15,21 @@ public class ReportGenerator {
 
     static Calendar calendar = Calendar.getInstance(Locale.US);
 
-    //Amount in GENERAL settled incoming everyday
+    //Daily incoming Amount Map
     HashMap<Date, BigDecimal> incommingDateAmountMap = new HashMap<>();
-    //Amount in GENERAL settled outgoing everyday
+    //Daily outgoing Amount Map
     HashMap<Date, BigDecimal> outgoingDateAmountMap = new HashMap<>();
 
-    //Amount in GENERAL settled incoming sum by title
+    //Entity incoming Amount Map
     HashMap<String, BigDecimal> incommingTitleAmountMap = new HashMap<>();
-    //Amount in GENERAL settled outgoing sum by title
+    //Entity outgoing Amount Map
     HashMap<String, BigDecimal> outgoingTitleAmountMap = new HashMap<>();
 
-    //memorize incoming trade start/end date for generate every report
+    //memorize incoming trade start/end date for daily report
     long startIncommingSettledTimeStamp = Long.MAX_VALUE;
     long endIncommingSettledTimeStamp = Long.MIN_VALUE;
 
-    //memorize outgoing trade start/end date for generate every report
+    //memorize outgoing trade start/end date for daily report
     long startOutgoingSettledTimeStamp = Long.MAX_VALUE;
     long endOutgoingSettledTimeStamp = Long.MIN_VALUE;
 
@@ -46,13 +46,14 @@ public class ReportGenerator {
         String title = trade.getTitle();
         Date settlementDate = trade.getSettlementDate();
         BigDecimal amount = trade.getAmount();
+        //if settlement date is not work day, change it to next valid work day
         if (!TradeDateUtil.isWorkDay(trade.getCurrency(), trade.getSettlementDate())) {
             try {
                 settlementDate = TradeDateUtil.getNextWorkDay(trade.getCurrency(), trade.getSettlementDate());
             } catch (InvalidWorkDayException ex) {
-                //invalid work day, ignore this trade
-                result = false;
+                //no valid work day exist, ignore this trade
                 System.out.println(ex.getMessage());
+                return false;
             }
         }
 
@@ -94,6 +95,7 @@ public class ReportGenerator {
     }
 
     public void generateIncomingAmountRankingReport() {
+        //sort at first time
         if (incommingRankingList.isEmpty()) {
             for (Map.Entry<String, BigDecimal> pair : incommingTitleAmountMap.entrySet()) {
                 incommingRankingList.add(pair);
@@ -112,6 +114,7 @@ public class ReportGenerator {
     }
 
     public void generateOutgoingAmountRankingReport() {
+        //sort at first time
         if (outgoingRankingList.isEmpty()) {
             for (Map.Entry<String, BigDecimal> pair : outgoingTitleAmountMap.entrySet()) {
                 outgoingRankingList.add(pair);
