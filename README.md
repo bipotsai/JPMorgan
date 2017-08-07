@@ -11,13 +11,13 @@ Code Structure
   * Instruction : client's instruction of BUY/SELL
 
 3.com.jpmorgan.interview.exception
-  * InstructionNotExistException : throws this when the invalid trade record of client's instruction of BUY/SELL
+  * InstructionNotExistException : throws this when the invalid instruction of trade record
   * InvalidWorkDayException : future expansion, developer could add none valid workweek Currency.
 
 4.com.jpmorgan.interview.utill
-  * TradeDateUtil : two main methods,
-  * "isWorkDay" is check workweek of specified currency
-  * "getNextWorkDay" for get next valid work day of specified currency
+  * TradeDateUtil : havs two main methods
+  * "isWorkDay" : check work day of specified currency
+  * "getNextWorkDay" : get next valid work day of specified currency
 
 5.com.jpmorgan.interview.ReportGenerator
   * generate all required report

@@ -10,43 +10,51 @@ import java.util.*;
 
 /**
  * Created by bipo on 06/08/2017.
+ *
+ * Generate required report from input trade entity.
+ *
  */
 public class ReportGenerator {
 
     static Calendar calendar = Calendar.getInstance(Locale.US);
 
     //Daily incoming Amount Map
-    HashMap<Date, BigDecimal> incommingDateAmountMap = new HashMap<>();
+    HashMap<Date, BigDecimal> incomingDateAmountMap = new HashMap<>();
     //Daily outgoing Amount Map
     HashMap<Date, BigDecimal> outgoingDateAmountMap = new HashMap<>();
 
     //Entity incoming Amount Map
-    HashMap<String, BigDecimal> incommingTitleAmountMap = new HashMap<>();
+    HashMap<String, BigDecimal> incomingTitleAmountMap = new HashMap<>();
     //Entity outgoing Amount Map
     HashMap<String, BigDecimal> outgoingTitleAmountMap = new HashMap<>();
 
     //memorize incoming trade start/end date for daily report
-    long startIncommingSettledTimeStamp = Long.MAX_VALUE;
-    long endIncommingSettledTimeStamp = Long.MIN_VALUE;
+    long startIncomingSettledTimeStamp = Long.MAX_VALUE;
+    long endIncomingSettledTimeStamp = Long.MIN_VALUE;
 
     //memorize outgoing trade start/end date for daily report
     long startOutgoingSettledTimeStamp = Long.MAX_VALUE;
     long endOutgoingSettledTimeStamp = Long.MIN_VALUE;
 
-    //cached data
-    ArrayList<Map.Entry<String, BigDecimal>> incommingRankingList = new ArrayList<>();
+    //cached data: if developer invokes twice generate ranking report, won't sort again
+    ArrayList<Map.Entry<String, BigDecimal>> incomingRankingList = new ArrayList<>();
     ArrayList<Map.Entry<String, BigDecimal>> outgoingRankingList = new ArrayList<>();
 
     public ReportGenerator() {
 
     }
 
+    /**
+     * input TradeEntity from input stream
+     * @param trade
+     * @return true:valid trade false:invalid trade
+     */
     public boolean addTrade(TradeEntity trade) {
         boolean result = true;
         String title = trade.getTitle();
         Date settlementDate = trade.getSettlementDate();
         BigDecimal amount = trade.getAmount();
-        //if settlement date is not work day, change it to next valid work day
+        //if settlement date is not a work day, change it to the next valid work day
         if (!TradeDateUtil.isWorkDay(trade.getCurrency(), trade.getSettlementDate())) {
             try {
                 settlementDate = TradeDateUtil.getNextWorkDay(trade.getCurrency(), trade.getSettlementDate());
@@ -57,6 +65,7 @@ public class ReportGenerator {
             }
         }
 
+        //separate incoming and outgoing TradeEntity
         switch (trade.getInstruction()) {
             case BUY:
                 outgoingDateAmountMap.put(settlementDate, outgoingDateAmountMap.getOrDefault(settlementDate, new BigDecimal(0.0)).add(amount));
@@ -66,25 +75,31 @@ public class ReportGenerator {
                 endOutgoingSettledTimeStamp = Math.max(endOutgoingSettledTimeStamp, settlementDate.getTime());
                 break;
             case SELL:
-                incommingDateAmountMap.put(settlementDate, incommingDateAmountMap.getOrDefault(settlementDate, new BigDecimal(0.0)).add(amount));
-                incommingTitleAmountMap.put(title, incommingTitleAmountMap.getOrDefault(title, new BigDecimal(0.0)).add(amount));
+                incomingDateAmountMap.put(settlementDate, incomingDateAmountMap.getOrDefault(settlementDate, new BigDecimal(0.0)).add(amount));
+                incomingTitleAmountMap.put(title, incomingTitleAmountMap.getOrDefault(title, new BigDecimal(0.0)).add(amount));
 
-                startIncommingSettledTimeStamp = Math.min(startIncommingSettledTimeStamp, settlementDate.getTime());
-                endIncommingSettledTimeStamp = Math.max(endIncommingSettledTimeStamp, settlementDate.getTime());
+                startIncomingSettledTimeStamp = Math.min(startIncomingSettledTimeStamp, settlementDate.getTime());
+                endIncomingSettledTimeStamp = Math.max(endIncomingSettledTimeStamp, settlementDate.getTime());
                 break;
         }
         return result;
     }
 
+    /**
+     * generate daily incoming amount report to console
+     */
     public void generateEveryIncomingAmountReport() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
-        calendar.setTimeInMillis(startIncommingSettledTimeStamp);
-        while (calendar.getTime().getTime() <= endIncommingSettledTimeStamp) {
-            System.out.printf("%s : %f \n", sdf.format(calendar.getTime()), incommingDateAmountMap.getOrDefault(calendar.getTime(), new BigDecimal(0.0)));
+        calendar.setTimeInMillis(startIncomingSettledTimeStamp);
+        while (calendar.getTime().getTime() <= endIncomingSettledTimeStamp) {
+            System.out.printf("%s : %f \n", sdf.format(calendar.getTime()), incomingDateAmountMap.getOrDefault(calendar.getTime(), new BigDecimal(0.0)));
             calendar.add(Calendar.DATE, 1);
         }
     }
 
+    /**
+     * generate daily outgoing amount report to console
+     */
     public void generateEveryOutgoingAmountReport() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
         calendar.setTimeInMillis(startOutgoingSettledTimeStamp);
@@ -94,13 +109,16 @@ public class ReportGenerator {
         }
     }
 
+    /**
+     * generate incoming amount ranking report to console
+     */
     public void generateIncomingAmountRankingReport() {
         //sort at first time
-        if (incommingRankingList.isEmpty()) {
-            for (Map.Entry<String, BigDecimal> pair : incommingTitleAmountMap.entrySet()) {
-                incommingRankingList.add(pair);
+        if (incomingRankingList.isEmpty()) {
+            for (Map.Entry<String, BigDecimal> pair : incomingTitleAmountMap.entrySet()) {
+                incomingRankingList.add(pair);
             }
-            Collections.sort( incommingRankingList, new Comparator<Map.Entry<String, BigDecimal>>()
+            Collections.sort(incomingRankingList, new Comparator<Map.Entry<String, BigDecimal>>()
             {
                 public int compare( Map.Entry<String, BigDecimal> o1, Map.Entry<String, BigDecimal> o2 )
                 {
@@ -108,11 +126,14 @@ public class ReportGenerator {
                 }
             } );
         }
-        for(Map.Entry<String, BigDecimal> pair : incommingRankingList){
+        for(Map.Entry<String, BigDecimal> pair : incomingRankingList){
             System.out.printf("%s : %f \n",pair.getKey(), pair.getValue());
         }
     }
 
+    /**
+     * generate outgoing amount ranking report to console
+     */
     public void generateOutgoingAmountRankingReport() {
         //sort at first time
         if (outgoingRankingList.isEmpty()) {

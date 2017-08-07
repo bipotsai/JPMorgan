@@ -4,6 +4,7 @@ import com.jpmorgan.interview.exception.InstructionNotExistException;
 
 /**
  * Created by bipo on 06/08/2017.
+ * the instruction of trade either B/S.
  */
 public enum Instruction {
 
@@ -21,6 +22,12 @@ public enum Instruction {
         return symbol;
     }
 
+    /**
+     * get enum:Instruction by string type symbol
+     * @param symbol
+     * @return
+     * @throws InstructionNotExistException when instruction is neither B/S
+     */
     public static Instruction getInstruction(String symbol) throws InstructionNotExistException{
 
         if (BUY.toString().equals(symbol)) {

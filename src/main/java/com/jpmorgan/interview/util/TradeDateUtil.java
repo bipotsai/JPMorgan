@@ -9,13 +9,15 @@ import java.util.Locale;
 
 /**
  * Created by bipo on 06/08/2017.
+ *
+ * Utility tool
  */
 public class TradeDateUtil {
 
     static Calendar calendar = Calendar.getInstance(Locale.US);
 
     /**
-     * check the settle date is valid week day by the it's currency
+     * check the inputDate date is a valid work day by the specified currency
      * @param currency
      * @param inputDate
      * @return
@@ -27,11 +29,11 @@ public class TradeDateUtil {
     }
 
     /**
-     * get adjacency work day
+     * get adjacency work day by the specified currency
      * @param currency
      * @param inputDate
      * @return
-     * @throws InvalidWorkDayException if a currency has no valid work day, throw excpetion
+     * @throws InvalidWorkDayException if a currency has no valid work day, throws InvalidWorkDayException
      */
     public static Date getNextWorkDay(Currency currency, Date inputDate) throws InvalidWorkDayException{
         calendar.setTime(inputDate);
