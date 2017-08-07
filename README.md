@@ -1,7 +1,8 @@
-# JP Morgan Interview Test
+JP Morgan Interview Test
+===================================
 
-
-### Code Structure
+Code Structure
+-----------------------------------
 1.com.jpmorgan.interview.entity
   #### TradeEntity : trade record entity
 
